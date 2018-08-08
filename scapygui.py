@@ -10,6 +10,7 @@ import threading
 from ScrolledText import *
 import os
 from scapy.arch.windows import *
+import tkMessageBox
 
   
 root=Tk()
@@ -226,5 +227,52 @@ button3=Tkinter.Button(topframe, text="stop sniff the data ", command=stopSniffB
 button3.grid(row=6,column=2)
 label_pktheader=Label(topframe, text="scapy pcap file stored at :'"+os.getcwd()+"\\scapypackets.pcap'")
 label_pktheader.grid(row=7,column=1,padx=10,pady=10)
+
+
+
+#***************************** attachment sending code***********************************************
+from tkinter.filedialog import askopenfilename
+def sendFile(filename):
+    try:
+        CHUNK_SIZE = 430    
+        cntpkt=0
+        with open(filename, 'rb') as infile:
+            while True:
+                # Read 430byte chunks of the image
+                chunk = infile.read(CHUNK_SIZE)
+                if not chunk: break
+                send(IP(dst='192.168.50.121')/TCP()/Raw(load=chunk))
+                cntpkt+=1
+                # Do what you want with each chunk (in dev, write line to file)            
+        print(cntpkt)
+        infile.close()
+        return True
+    except:
+        return False
+    
+
+def openWindow():
+    Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
+    filename = askopenfilename() # show an "Open" dialog box and return the path to the selected file
+    print(filename)
+    if sendFile(filename):
+        tkMessageBox.showinfo("Success", "Attachment has been sent")
+    else:
+        tkMessageBox.showinfo("Failed", "Please try again")
+import pcapparser
+def getFile():
+    Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
+    filename = askopenfilename()
+    if pcapparser.extractFile(filename):
+        tkMessageBox.showinfo("Success", "File has been extracted")
+    else:
+        tkMessageBox.showinfo("Error", "some error occurred")
+
+
+
+button4=Tkinter.Button(topframe, text="send attachment ", command=openWindow)
+button4.grid(row=7,column=2)
+button5=Tkinter.Button(topframe, text="Retrive File ", command=getFile)
+button5.grid(row=8,column=2)
 
 root.mainloop()
